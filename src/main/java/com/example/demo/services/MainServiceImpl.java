@@ -2,7 +2,12 @@ package com.example.demo.services;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Optional;
+
+import javax.persistence.EntityManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,6 +26,9 @@ import com.google.zxing.qrcode.QRCodeWriter;
 
 @Service
 public class MainServiceImpl implements MainService {
+	
+	
+	EntityManager em;
 	
 	@Autowired
 	QrRepository qrRepository;
@@ -60,30 +68,44 @@ public class MainServiceImpl implements MainService {
 		
 		try {
 			
+			Optional<QR> qr = qrRepository.findByIdTienda(idTienda);
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+			Date currentDate = new Date();
+			String fecha = sdf.format(currentDate);
 			
-			int contador = 0;
-			long cantidad = qrRepository.count();
-			
-			if(cantidad == 0) {
-				QR qr = new QR();	
-				qr.setIdTienda(idTienda);
-				qr.setCodDepto(codDepto);
-				qr.setContador(contador+1);
-				qrRepository.saveAndFlush(qr);
+			if(!qr.isPresent()) {
 				
+					
+				QR newQR = new QR();
+				newQR.setIdTienda(idTienda);
+				newQR.setCodDepto(codDepto);
+				newQR.setContador(1);
+				newQR.setFecha(fecha);
+			
+				qrRepository.save(newQR);
+				status = HttpStatus.OK;
+				genericResponse.setCode(200);
+				genericResponse.setMessage("QR Creado");
+				genericResponse.setResponse(newQR);
+				
+			}else{
+				
+				qr.get().setContador(qr.get().getContador()+1);
+				qrRepository.save(qr.get());		
+				status = HttpStatus.FOUND;
+				genericResponse.setCode(200);
+				genericResponse.setMessage("Contador QR actualizado");
+				genericResponse.setResponse(qr.get());	
 			}
 			
-			
-			
-			
-			
+				
 		}catch(Exception ex) {
-			
+			status = HttpStatus.FOUND;
 			
 			
 		}
 		
-		return null;
+		return new ResponseEntity<>(genericResponse, status);
 	}
 
 

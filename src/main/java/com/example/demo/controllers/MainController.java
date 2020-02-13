@@ -27,8 +27,7 @@ public class MainController {
 	}
 	
 	@GetMapping("/getdata")
-	public ResponseEntity<GenericResponse> sendData(@RequestParam long id, @RequestParam long codDepto){
-		
+	public ResponseEntity<GenericResponse> sendData(@RequestParam long id, @RequestParam long codDepto){	
 		return mainService.countQr(id, codDepto);
 	}
 	
