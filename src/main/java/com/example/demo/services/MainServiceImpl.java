@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import javax.persistence.EntityManager;
@@ -68,14 +69,40 @@ public class MainServiceImpl implements MainService {
 		
 		try {
 			
-			Optional<QR> qr = qrRepository.findByIdTienda(idTienda);
+			List<QR> qr = qrRepository.findAllByIdTienda(idTienda);
+			
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 			Date currentDate = new Date();
 			String fecha = sdf.format(currentDate);
-			
-			if(!qr.isPresent()) {
-				
+			status = HttpStatus.OK;
+			if(!qr.isEmpty()) {
+				int largo = qr.size()-1;
+				//qr.get().getFecha().equals(fecha)	
+				if(!qr.get(largo).getFecha().equals(fecha)) {
 					
+					QR qrExist = new QR();
+					qrExist.setIdTienda(idTienda);
+					qrExist.setCodDepto(codDepto);
+					qrExist.setContador(1);
+					qrExist.setFecha(fecha);
+					qrRepository.save(qrExist);
+					status = HttpStatus.OK;
+					genericResponse.setCode(200);
+					genericResponse.setMessage("Nuevo QR por fechas agregado!");
+					genericResponse.setResponse(qr.get(largo));	
+					
+				}else {
+					qr.get(largo).setContador(qr.get(largo).getContador()+1);
+					qrRepository.save(qr.get(largo));		
+					status = HttpStatus.FOUND;
+					genericResponse.setCode(200);
+					genericResponse.setMessage("Contador QR actualizado");
+					genericResponse.setResponse(qr.get(largo));	
+									
+				}
+						
+				
+			}else{
 				QR newQR = new QR();
 				newQR.setIdTienda(idTienda);
 				newQR.setCodDepto(codDepto);
@@ -88,18 +115,11 @@ public class MainServiceImpl implements MainService {
 				genericResponse.setMessage("QR Creado");
 				genericResponse.setResponse(newQR);
 				
-			}else{
-				
-				qr.get().setContador(qr.get().getContador()+1);
-				qrRepository.save(qr.get());		
-				status = HttpStatus.FOUND;
-				genericResponse.setCode(200);
-				genericResponse.setMessage("Contador QR actualizado");
-				genericResponse.setResponse(qr.get());	
 			}
 			
-				
+			
 		}catch(Exception ex) {
+			System.out.println("La catch: "+ex);
 			status = HttpStatus.FOUND;
 			
 			
