@@ -3,18 +3,14 @@ package com.example.demo.services;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-
-import javax.persistence.EntityManager;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
+import com.example.demo.models.EntryData;
 import com.example.demo.models.QR;
 import com.example.demo.models.QRData;
 import com.example.demo.repository.QrRepository;
@@ -29,7 +25,6 @@ import com.google.zxing.qrcode.QRCodeWriter;
 public class MainServiceImpl implements MainService {
 	
 	
-	EntityManager em;
 	
 	@Autowired
 	QrRepository qrRepository;
@@ -127,6 +122,35 @@ public class MainServiceImpl implements MainService {
 		
 		return new ResponseEntity<>(genericResponse, status);
 	}
+
+
+	@Override
+	public ResponseEntity<GenericResponse> findTiendaByFecha(EntryData entryData) {
+			
+		GenericResponse genericResponse = new GenericResponse();
+		HttpStatus status = null;
+		
+		try{
+			Optional<QR> qr = qrRepository.findTienda(entryData.getIdTienda(), entryData.getFecha());
+			System.out.println("QR: "+qr.get().getFecha());
+			status = HttpStatus.OK;
+			genericResponse.setCode(200);
+			genericResponse.setMessage("Registro encontrado!");
+			genericResponse.setResponse(qr);
+			
+			
+		}catch(Exception ex) {
+			status = HttpStatus.INTERNAL_SERVER_ERROR;
+			System.out.println("EXCEPTION EX: "+ex);
+			
+		}
+		
+		
+		
+		return new ResponseEntity<>(genericResponse, status);
+	}
+	
+	
 
 
 }

@@ -4,10 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
+import com.example.demo.models.EntryData;
 import com.example.demo.models.QRData;
 import com.example.demo.services.MainServiceImpl;
 import com.example.demo.util.GenericResponse;
@@ -26,8 +27,13 @@ public class MainController {
 		return mainService.createQr(qrData);
 	}
 	
-	@GetMapping("/getdata")
-	public ResponseEntity<GenericResponse> sendData(@RequestParam long id, @RequestParam long codDepto){	
+	@PostMapping("/query")
+	public ResponseEntity<GenericResponse> getQrData(@RequestBody EntryData entryData){
+		return mainService.findTiendaByFecha(entryData);
+	}
+	
+	@GetMapping("/getdata/{id}/{codDepto}")
+	public ResponseEntity<GenericResponse> sendData(@PathVariable long id, @PathVariable long codDepto){	
 		return mainService.countQr(id, codDepto);
 	}
 	
