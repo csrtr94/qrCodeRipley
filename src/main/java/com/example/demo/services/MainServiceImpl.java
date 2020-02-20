@@ -3,16 +3,29 @@ package com.example.demo.services;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.TimeZone;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
 import com.example.demo.models.EntryData;
+import com.example.demo.models.OfferData;
+import com.example.demo.models.OfferDataDTO;
 import com.example.demo.models.QR;
 import com.example.demo.models.QRData;
+import com.example.demo.repository.OfferRepository;
 import com.example.demo.repository.QrRepository;
 import com.example.demo.util.GenericResponse;
 import com.google.zxing.BarcodeFormat;
@@ -28,6 +41,9 @@ public class MainServiceImpl implements MainService {
 	
 	@Autowired
 	QrRepository qrRepository;
+	
+	@Autowired
+	OfferRepository offerRepository;
 
 	@Override
 	public ResponseEntity<GenericResponse> createQr(QRData qrData) {
@@ -148,6 +164,80 @@ public class MainServiceImpl implements MainService {
 		
 		
 		return new ResponseEntity<>(genericResponse, status);
+	}
+
+
+	@Override
+	public ResponseEntity<GenericResponse> saveQrData(OfferDataDTO offerData) {
+		
+		RestTemplate plantilla = new RestTemplate();
+		String url = "http://192.168.14.50:9080/apirest-campanas/campaign";
+		JSONObject json = new JSONObject();
+		
+		json.put("action",2031);
+		json.put("branch",31);
+		json.put("channel",13);
+		json.put("clientDni",Integer.parseInt(offerData.getRut()));
+		json.put("executiveDni",0);
+		json.put("filterApplication","");
+		json.put("filterDevice","");
+		json.put("filterProduct","");
+		json.put("terminal",0);
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		SimpleDateFormat horasdf = new SimpleDateFormat("HH:mm:ss");
+		Date currentDate = new Date();
+		
+		String hora = horasdf.format(currentDate);
+		String fecha = sdf.format(currentDate);
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<String> request = new HttpEntity<String>(json.toString(), headers);
+	
+		String response = plantilla.postForObject(url, request, String.class);
+		JSONObject jsonObject = new JSONObject(response);
+		JSONArray arrayObject = jsonObject.getJSONArray("offers");
+	
+		
+		OfferData offer = new OfferData();
+		offer.setRut(offerData.getRut());
+		offer.setCodTienda(offerData.getIdTienda());
+		offer.setCodDepto(offerData.getCodDepto());
+		offer.setFecha(fecha);
+		offer.setHora(hora);
+		offer.setCp(0);
+		offer.setCv(0);
+		offer.setTAM(0);
+		offer.setTr(0);
+		offerRepository.save(offer);
+		
+		
+		
+		
+		for(int i=0; i<arrayObject.length(); i++) {
+			
+			String productType = arrayObject.getJSONObject(i).get("productType").toString();
+			
+			if(productType.equals("9")) {
+				offer.setTAM(1);
+				offerRepository.save(offer);
+			}else if(productType.equals("300")) {
+				offer.setCv(1);
+				offerRepository.save(offer);
+			}else if(productType.contentEquals("8")) {
+				offer.setCp(1);
+				offerRepository.save(offer);
+			}
+			
+		}
+		
+				
+		
+		
+	
+		
+		return null;
 	}
 	
 	

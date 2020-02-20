@@ -18,16 +18,18 @@ public class OfferData {
 	private long TAM;
 	private long cp;
 	private long tr;
+	private String fecha;
+	private String hora;
 	
 	public OfferData() {}
-	public OfferData(long id, String rut, long codTienda, long codDepto, long cv, long tAM, long cp, long tr) {
+	public OfferData(long id, String rut, long codTienda, long codDepto, long cv, long TAM, long cp, long tr, String fecha, String hora) {
 		
 		this.id = id;
 		this.rut = rut;
 		this.codTienda = codTienda;
 		this.codDepto = codDepto;
 		this.cv = cv;
-		TAM = tAM;
+		this.TAM = TAM;
 		this.cp = cp;
 		this.tr = tr;
 	}
@@ -65,8 +67,8 @@ public class OfferData {
 	public long getTAM() {
 		return TAM;
 	}
-	public void setTAM(long tAM) {
-		TAM = tAM;
+	public void setTAM(long TAM) {
+		this.TAM = TAM;
 	}
 	public long getCp() {
 		return cp;
@@ -79,6 +81,18 @@ public class OfferData {
 	}
 	public void setTr(long tr) {
 		this.tr = tr;
+	}
+	public String getFecha() {
+		return fecha;
+	}
+	public void setFecha(String fecha) {
+		this.fecha = fecha;
+	}
+	public String getHora() {
+		return hora;
+	}
+	public void setHora(String hora) {
+		this.hora = hora;
 	}
 	
 }

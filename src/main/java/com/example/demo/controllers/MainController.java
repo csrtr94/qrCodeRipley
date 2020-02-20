@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.example.demo.models.EntryData;
+import com.example.demo.models.OfferDataDTO;
 import com.example.demo.models.QRData;
 import com.example.demo.services.MainServiceImpl;
 import com.example.demo.util.GenericResponse;
@@ -36,5 +37,10 @@ public class MainController {
 	public ResponseEntity<GenericResponse> sendData(@PathVariable long id, @PathVariable long codDepto){	
 		return mainService.countQr(id, codDepto);
 	}
+	
+	@PostMapping("/savedata")
+	public ResponseEntity<GenericResponse> saveRegister(@RequestBody OfferDataDTO data){
+		return mainService.saveQrData(data);
+	} 
 	
 }
