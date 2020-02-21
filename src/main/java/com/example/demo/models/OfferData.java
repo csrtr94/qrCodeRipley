@@ -22,6 +22,19 @@ public class OfferData {
 	private String hora;
 	
 	public OfferData() {}
+	public OfferData(String rut, long codTienda, long codDepto, long cv, long tAM, long cp, long tr, String fecha,
+			String hora) {
+		
+		this.rut = rut;
+		this.codTienda = codTienda;
+		this.codDepto = codDepto;
+		this.cv = cv;
+		TAM = tAM;
+		this.cp = cp;
+		this.tr = tr;
+		this.fecha = fecha;
+		this.hora = hora;
+	}
 	public OfferData(long id, String rut, long codTienda, long codDepto, long cv, long TAM, long cp, long tr, String fecha, String hora) {
 		
 		this.id = id;
