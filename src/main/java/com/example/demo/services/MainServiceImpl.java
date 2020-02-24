@@ -52,11 +52,11 @@ public class MainServiceImpl implements MainService {
 		HttpStatus status = null;
 		try{
 			QRCodeWriter writer = new QRCodeWriter();
-			String url = "https://d1238455.ngrok.io?action="+qrData.getAction()+"&branch="+qrData.getBranch()+"&channel="+qrData.getChannel();
+			String url = "https://simple.ripley.cl/tarjeta-ripley?action="+qrData.getAction()+"&branch="+qrData.getBranch()+"&channel="+qrData.getChannel();
 			
 			BitMatrix matrix = writer.encode(url, BarcodeFormat.QR_CODE, 400, 400);
 			
-			Path path = FileSystems.getDefault().getPath("C:\\Users\\César Trincado\\Desktop\\contenedor\\rutQr.jpg");
+			Path path = FileSystems.getDefault().getPath("C:\\Users\\César Trincado\\Pictures\\QR\\rutQr.jpg");
 			MatrixToImageWriter.writeToPath(matrix, "JPG", path);
 			status = HttpStatus.OK;
 			genericResponse.setCode(200);
