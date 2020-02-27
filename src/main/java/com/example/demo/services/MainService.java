@@ -16,5 +16,7 @@ public interface MainService {
 	public ResponseEntity<GenericResponse> findTiendaByFecha(EntryData entryData);
 	
 	public ResponseEntity<GenericResponse> saveQrData(OfferDataDTO data);
+	
+	public GenericResponse saveOfferData(OfferDataDTO offerData);
 
 }

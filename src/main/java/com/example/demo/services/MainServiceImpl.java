@@ -3,11 +3,11 @@ package com.example.demo.services;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.TimeZone;
+
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -169,17 +169,16 @@ public class MainServiceImpl implements MainService {
 
 	@Override
 	public ResponseEntity<GenericResponse> saveQrData(OfferDataDTO offerData) {
-		
-		
-		GenericResponse genericResponse = new GenericResponse();
+				
 		RestTemplate plantilla = new RestTemplate();
-		String url = "http://192.168.14.50:9080/apirest-campanas/campaign";
+		String url = "https://miportal.bancoripley.cl/apirest-campanas/campaign";
 		
 		HttpStatus status = null;
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		SimpleDateFormat horasdf = new SimpleDateFormat("HH:mm:ss");
 		Date currentDate = new Date();
 		
+		GenericResponse genericResponse = new GenericResponse();
 		try {
 			
 			JSONObject json = new JSONObject();
@@ -202,11 +201,10 @@ public class MainServiceImpl implements MainService {
 	
 			String response = plantilla.postForObject(url, request, String.class);
 			JSONObject jsonObject = new JSONObject(response);
-			System.out.println("JSON OBJECT: "+jsonObject.get("offers"));
 			if( !jsonObject.get("offers").equals(null)) {
 			
 				JSONArray arrayObject = jsonObject.getJSONArray("offers");
-			
+				
 				OfferData offer = 
 						new OfferData(offerData.getRut(), offerData.getIdTienda(), offerData.getCodDepto(),0,0,0, 0, fecha,hora);
 
@@ -215,13 +213,30 @@ public class MainServiceImpl implements MainService {
 				for(int i=0; i<arrayObject.length(); i++) {
 			
 					String productType = arrayObject.getJSONObject(i).get("productType").toString();
-			
+					String popup = arrayObject.getJSONObject(i).get("popup").toString();
+					String popupArr[] = popup.split(" ");
+					boolean flag = false;
+					for(int x=0; x<popupArr.length; x++) {
+						if(popupArr[x].equals("Mastercard")) {
+							flag = true;
+						}
+					}
+														
 					switch(productType) {
 				
-						case "9" : 
-							offer.setTAM(1);
-							offerRepository.save(offer);
-							break;
+						case "9" :
+							
+							if(flag) {
+								offer.setTAM(1);
+								offerRepository.save(offer);
+								break;
+							}else {
+								offer.setTr(1);
+								offerRepository.save(offer);
+								break;
+							}
+							
+											
 						case "300" : 
 							offer.setCv(1);
 							offerRepository.save(offer);
@@ -230,7 +245,7 @@ public class MainServiceImpl implements MainService {
 							offer.setCp(1);
 							offerRepository.save(offer);
 							break;
-						default : System.out.println("No hay oferta aa");			
+						default : System.out.println("No existen ofertas");			
 					}
 			
 				}
@@ -241,19 +256,127 @@ public class MainServiceImpl implements MainService {
 			
 			
 			}else {
-				System.out.println("No hay oferta disponible aa");
-				status = HttpStatus.NO_CONTENT;
 				genericResponse.setCode(200);
 				genericResponse.setMessage("No hay oferta disponible");
 				genericResponse.setResponse(null);
+				status = HttpStatus.NO_CONTENT;
+				
+				
 			}
 			
 		}catch(Exception ex) {
+			System.out.println("aa: "+ex);
 			status = HttpStatus.BAD_REQUEST;
-			System.out.println(ex);
+			genericResponse.setCode(400);
+			genericResponse.setMessage("No existen datos de entrada");
+			genericResponse.setResponse(null);
+			
 		}
 		
 		return new ResponseEntity<>(genericResponse, status);
+	}
+
+
+	@Override
+	public GenericResponse saveOfferData(OfferDataDTO offerData) {
+		
+		RestTemplate plantilla = new RestTemplate();
+		String url = "https://miportal.bancoripley.cl/apirest-campanas/campaign";		
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		SimpleDateFormat horasdf = new SimpleDateFormat("HH:mm:ss");
+		Date currentDate = new Date();
+		GenericResponse genericResponse = new GenericResponse();
+		
+		try {
+			JSONObject json = new JSONObject();
+			json.put("action",2031);
+			json.put("branch",31);
+			json.put("channel",13);
+			json.put("clientDni",Integer.parseInt(offerData.getRut()));
+			json.put("executiveDni",0);
+			json.put("filterApplication","");
+			json.put("filterDevice","");
+			json.put("filterProduct","");
+			json.put("terminal",0);
+			
+			String hora = horasdf.format(currentDate);
+			String fecha = sdf.format(currentDate);
+		
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
+			HttpEntity<String> request = new HttpEntity<String>(json.toString(), headers);
+	
+			String response = plantilla.postForObject(url, request, String.class);
+			JSONObject jsonObject = new JSONObject(response);
+			if( !jsonObject.get("offers").equals(null)){
+			
+				JSONArray arrayObject = jsonObject.getJSONArray("offers");
+				
+				OfferData offer = 
+						new OfferData(offerData.getRut(), offerData.getIdTienda(), offerData.getCodDepto(),0,0,0, 0, fecha,hora);
+
+				offerRepository.save(offer);
+		
+				for(int i=0; i<arrayObject.length(); i++) {
+			
+					String productType = arrayObject.getJSONObject(i).get("productType").toString();
+					String popup = arrayObject.getJSONObject(i).get("popup").toString();
+					String popupArr[] = popup.split(" ");
+					boolean flag = false;
+					for(int x=0; x<popupArr.length; x++) {
+						if(popupArr[x].equals("Mastercard")) {
+							flag = true;
+						}
+					}
+														
+					switch(productType) {
+				
+						case "9" :
+							
+							if(flag) {
+								offer.setTAM(1);
+								offerRepository.save(offer);
+								break;
+							}else {
+								offer.setTr(1);
+								offerRepository.save(offer);
+								break;
+							}
+							
+											
+						case "300" : 
+							offer.setCv(1);
+							offerRepository.save(offer);
+							break;
+						case "8" :
+							offer.setCp(1);
+							offerRepository.save(offer);
+							break;
+						default : System.out.println("No existen ofertas");			
+					}
+			
+				}
+				
+				genericResponse.setCode(200);
+				genericResponse.setMessage("Oferta encontrada");
+				genericResponse.setResponse(offer);
+			
+			
+			}else {
+				genericResponse.setCode(200);
+				genericResponse.setMessage("No hay oferta disponible");
+				genericResponse.setResponse(null);
+				
+			}
+			
+		}catch(Exception ex) {
+			genericResponse.setCode(400);
+			genericResponse.setMessage("No existen datos de entrada");
+			genericResponse.setResponse(null);
+		}
+			
+		return genericResponse;
 	}
 
 }
